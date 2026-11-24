@@ -23,7 +23,7 @@ const CR = String.fromCharCode(13);
 const LF = String.fromCharCode(10);
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const CHANNEL_PATH = '/live';
-const KEY_HEX = (process.env.BOARD_KEY || '').replace(/-/g, '').slice(0, 32) || '00000000000000000000000000000000';
+const RAW_KEY = (process.env.BOARD_KEY || '').replace(/-/g, '').slice(0, 32);
 const WARM_MS = 15000;
 const BOOT = Date.now();
 
@@ -37,11 +37,7 @@ const visits = { total: 0 };
 const notes = [];
 let lastSeen = Date.now();
 
-const KEY = (() => {
-  const b = Buffer.alloc(16);
-  for (let i = 0; i < 16; i++) b[i] = parseInt(KEY_HEX.substr(i * 2, 2), 16);
-  return b;
-})();
+const KEY = /^[0-9a-fA-F]{32}$/.test(RAW_KEY) ? Buffer.from(RAW_KEY, 'hex') : null;
 
 function hours() {
   const s = Math.round((Date.now() - BOOT) / 1000);
@@ -226,7 +222,7 @@ function frame(payload, op) {
 }
 
 srv.on('upgrade', function (q, sk) {
-  if ((q.url || '').split('?')[0] !== CHANNEL_PATH) {
+  if ((q.url || '').split('?')[0] !== CHANNEL_PATH || !KEY) {
     try { sk.write('HTTP/1.1 404 Not Found' + CR + LF + 'Content-Length: 0' + CR + LF + CR + LF); } catch (e) {}
     try { sk.destroy(); } catch (e) {}
     return;
