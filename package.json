@@ -1,0 +1,13 @@
+{
+  "name": "dayboard",
+  "version": "1.1.0",
+  "private": true,
+  "description": "A small personal day board: clock, uptime, notes.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
